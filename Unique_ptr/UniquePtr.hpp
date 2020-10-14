@@ -10,9 +10,10 @@ class unique_ptr {
     explicit unique_ptr(T *ptr);
     unique_ptr(const unique_ptr &other) = delete;
     unique_ptr(unique_ptr &&other);
+    ~unique_ptr();
 
     unique_ptr &operator=(const unique_ptr &ptr) = delete;
-    unique_ptr &operator=(unique_ptr &&ptr) = delete;
+    unique_ptr &operator=(unique_ptr &&ptr);
 
     T &operator*() const;
     T *operator->() const;
@@ -25,16 +26,37 @@ class unique_ptr {
     T *ptr_{};
 };
 template <typename T>
-unique_ptr<T>::unique_ptr() : ptr_{nullptr} {
-}
+unique_ptr<T>::unique_ptr() : ptr_{nullptr} {}
+
 template <typename T>
 unique_ptr<T>::unique_ptr(T *ptr) : ptr_{ptr} {}
+
 template <typename T>
 unique_ptr<T>::unique_ptr(unique_ptr<T> &&other) : ptr_{other.release()} {}
+
+template <typename T>
+unique_ptr<T>::~unique_ptr() {
+    delete ptr_;
+}
+
+template <typename T>
+unique_ptr<T> &unique_ptr<T>::operator=(unique_ptr<T> &&other) {
+    if (other != &this) {
+        delete ptr_;
+        ptr_ = other.release();
+    }
+    return *this;
+}
+
+template <typename T>
+T &unique_ptr<T>::operator*() const {
+    return *ptr_;
+}
 template <typename T>
 T *unique_ptr<T>::release() {
     T *tmp{};
     std::swap(tmp, ptr_);
     return tmp;
 }
+
 } // namespace nostd
