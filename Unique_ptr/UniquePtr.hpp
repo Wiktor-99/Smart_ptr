@@ -52,6 +52,23 @@ template <typename T>
 T &unique_ptr<T>::operator*() const {
     return *ptr_;
 }
+
+template <typename T>
+T *unique_ptr<T>::operator->() const {
+    return ptr_;
+}
+
+template <typename T>
+T *unique_ptr<T>::get() const {
+    return ptr_;
+}
+
+template <typename T>
+void unique_ptr<T>::reset(T *newPtr = nullptr) {
+    delete ptr_;
+
+    ptr_ = newPtr;
+}
 template <typename T>
 T *unique_ptr<T>::release() {
     T *tmp{};
