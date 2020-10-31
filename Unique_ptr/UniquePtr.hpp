@@ -1,6 +1,6 @@
 #pragma once
 #include <utility>
-
+#include<iostream>
 namespace nostd {
 
 template <typename T>
@@ -41,7 +41,7 @@ unique_ptr<T>::~unique_ptr() {
 
 template <typename T>
 unique_ptr<T> &unique_ptr<T>::operator=(unique_ptr<T> &&other) {
-    if (other != &this) {
+    if (this != &other) {
         delete ptr_;
         ptr_ = other.release();
     }
@@ -64,9 +64,8 @@ T *unique_ptr<T>::get() const {
 }
 
 template <typename T>
-void unique_ptr<T>::reset(T *newPtr = nullptr) {
+void unique_ptr<T>::reset(T *newPtr) {
     delete ptr_;
-
     ptr_ = newPtr;
 }
 template <typename T>
