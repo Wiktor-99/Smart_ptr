@@ -1,14 +1,20 @@
 #pragma once
 
 #include <atomic>
+#include <functional>
 
-constexpr std::size_t defaultRefCounterValue = 0;
-constexpr std::size_t resetRefCounterValue = 1;
+
+constexpr std::size_t defaultRefCounterValue = 1;
 
 namespace nostd {
+template<typename T>
 class CounterBlock {
+
   public:
-    CounterBlock() : sharedRefCounter_(defaultRefCounterValue) {}
+    using Deleter = std::function<void(T *)>;
+
+  public:
+    CounterBlock(Deleter deleter = [](T *ptr) { delete ptr; }) : deleter_{deleter},sharedRefCounter_{defaultRefCounterValue} {}
     CounterBlock(const CounterBlock &other) = delete;
     CounterBlock(CounterBlock &&other) = delete;
 
@@ -21,9 +27,9 @@ class CounterBlock {
     void decrementRefCounter() { sharedRefCounter_--; }
 
     std::size_t getSharedrefCounter() const { return sharedRefCounter_.load(); }
-    void resetRefCounter() { sharedRefCounter_ = resetRefCounterValue; }
 
   private:
-    std::atomic<std::size_t> sharedRefCounter_ = 0;
+    std::atomic<std::size_t> sharedRefCounter_ = defaultRefCounterValue;
+    Deleter deleter_ = [](T *ptr) { delete ptr; };
 };
 } // namespace nostd
