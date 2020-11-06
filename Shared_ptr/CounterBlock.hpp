@@ -27,7 +27,7 @@ class CounterBlock {
     void decrementRefCounter() { sharedRefCounter_--; }
 
     std::size_t getSharedrefCounter() const { return sharedRefCounter_.load(); }
-
+    Deleter getDeleter()const {return deleter_;}
   private:
     std::atomic<std::size_t> sharedRefCounter_ = defaultRefCounterValue;
     Deleter deleter_ = [](T *ptr) { delete ptr; };

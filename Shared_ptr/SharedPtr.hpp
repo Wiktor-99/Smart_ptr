@@ -6,6 +6,7 @@ namespace nostd {
 
 template <typename T>
 class shared_ptr {
+  public:
     shared_ptr(
         T *ptr = nullptr, std::function<void(T *)> deleter = [](T *ptr) { delete ptr; });
     shared_ptr(const shared_ptr<T> &other) noexcept;
@@ -15,10 +16,10 @@ class shared_ptr {
     shared_ptr<T> &operator=(const shared_ptr<T> &other) noexcept;
     shared_ptr<T> &operator=(shared_ptr<T> &&other) noexcept;
 
-    T &operator*() const noexcept{return *ptr_;}
-    T *operator->() const noexcept{return ptr_;}
+    T &operator*() const noexcept { return *ptr_; }
+    T *operator->() const noexcept { return ptr_; }
     std::size_t use_count() const noexcept { return static_cast<std::size_t>(counterBlock_->getSharedrefCounter()); }
-    T *get() const noexcept{return ptr_;}
+    T *get() const noexcept { return ptr_; }
     void reset(
         T *ptr = nullptr, std::function<void(T *)> deleter = [](T *ptr) { delete ptr; }) noexcept;
     explicit operator bool() const noexcept { return ptr_ != nullptr; }
@@ -35,7 +36,8 @@ void shared_ptr<T>::deleteResource() {
     if (counterBlock_) {
         counterBlock_->decrementRefCounter();
         if (counterBlock_->getSharedrefCounter() == 0) {
-            counterBlock_->deleter_(ptr_);
+            auto deleter = counterBlock_->getDeleter();
+            deleter(ptr_);
             delete counterBlock_;
         }
     }
