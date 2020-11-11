@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(FLAGS -Wall -Wextra -Werror -pedantic -Wconversion -O3)
 
 # Download and unpack googletest at configure time
 configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
@@ -38,7 +39,13 @@ endif()
 project(SharedPtr)
 enable_testing()
 
+set (TEST_FILES
+    SharedPtr-ut.cpp
+    WeakPtr-ut.cpp)
+add_executable(${PROJECT_NAME}-ut ${TEST_FILES})
 add_executable(${PROJECT_NAME} main.cpp)
-add_executable(${PROJECT_NAME}-ut SharedPtr-ut.cpp)
+add_compile_options(${PROJECT_NAME}-ut FLAGS)
+add_compile_options(${PROJECT_NAME} FLAGS)
+
 target_link_libraries(${PROJECT_NAME}-ut gtest_main)
-add_test(NAME ${PROJECT_NAME}_test COMMAND ${PROJECT_NAME}-ut)
+add_test(NAME ${PROJECT_NAME}_tests COMMAND ${PROJECT_NAME}-ut)
