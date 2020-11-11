@@ -3,33 +3,36 @@
 #include <atomic>
 #include <functional>
 
-
-constexpr std::size_t defaultRefCounterValue = 1;
-
 namespace nostd {
-template<typename T>
+template <typename T>
 class CounterBlock {
 
   public:
     using Deleter = std::function<void(T *)>;
 
   public:
-    CounterBlock(Deleter deleter = [](T *ptr) { delete ptr; }) : deleter_{deleter},sharedRefCounter_{defaultRefCounterValue} {}
-    CounterBlock(const CounterBlock &other) = delete;
-    CounterBlock(CounterBlock &&other) = delete;
-
-    CounterBlock &operator=(const CounterBlock &other) = delete;
-    CounterBlock &operator=(CounterBlock &&other) = delete;
-
-    ~CounterBlock() {}
-
-    void incrementRefCounter() { sharedRefCounter_++; }
-    void decrementRefCounter() { sharedRefCounter_--; }
-
+    CounterBlock(Deleter deleter = [](T *ptr) { delete ptr; }) noexcept : deleter_{deleter} {}
+    void incrementSharedRefCounter() { sharedRefCounter_++; }
+    void decrementSharedRefCounter() {
+        if (sharedRefCounter_ > 0) {
+            sharedRefCounter_--;
+        }
+    }
     std::size_t getSharedrefCounter() const { return sharedRefCounter_.load(); }
-    Deleter getDeleter()const {return deleter_;}
+
+    void incrementWeakRefCounter() { weakRefCounter_++; }
+    void decrementWeakRefCounter() {
+        if (weakRefCounter_ > 0) {
+            weakRefCounter_--;
+        }
+    }
+    std::size_t getWeakRefCounter() const { return sharedRefCounter_.load(); }
+
+    Deleter getDeleter() const { return deleter_; }
+
   private:
-    std::atomic<std::size_t> sharedRefCounter_ = defaultRefCounterValue;
+    std::atomic<std::size_t> weakRefCounter_ = 0;
+    std::atomic<std::size_t> sharedRefCounter_ = 1;
     Deleter deleter_ = [](T *ptr) { delete ptr; };
 };
 } // namespace nostd

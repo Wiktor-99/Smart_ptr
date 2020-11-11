@@ -34,7 +34,7 @@ class shared_ptr {
 template <typename T>
 void shared_ptr<T>::deleteResource() {
     if (counterBlock_) {
-        counterBlock_->decrementRefCounter();
+        counterBlock_->decrementSharedRefCounter();
         if (counterBlock_->getSharedrefCounter() == 0) {
             auto deleter = counterBlock_->getDeleter();
             deleter(ptr_);
@@ -50,7 +50,7 @@ template <typename T>
 shared_ptr<T>::shared_ptr(const shared_ptr<T> &other) noexcept {
     ptr_ = other.ptr_;
     counterBlock_ = other.counterBlock_;
-    counterBlock_->incrementRefCounter();
+    counterBlock_->incrementSharedRefCounter();
 }
 template <typename T>
 shared_ptr<T>::shared_ptr(shared_ptr<T> &&other) noexcept {
@@ -65,7 +65,7 @@ shared_ptr<T> &shared_ptr<T>::operator=(const shared_ptr<T> &other) noexcept {
         deleteResource();
         ptr_ = other.ptr_;
         counterBlock_ = other.counterBlock_;
-        counterBlock_->incrementRefCounter();
+        counterBlock_->incrementSharedRefCounter();
     }
     return *this;
 }
