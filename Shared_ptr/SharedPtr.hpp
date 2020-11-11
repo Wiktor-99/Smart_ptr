@@ -47,15 +47,11 @@ template <typename T>
 shared_ptr<T>::shared_ptr(T *ptr, std::function<void(T *)> deleter)
     : ptr_{ptr}, counterBlock_{new CounterBlock<T>(deleter)} {}
 template <typename T>
-shared_ptr<T>::shared_ptr(const shared_ptr<T> &other) noexcept {
-    ptr_ = other.ptr_;
-    counterBlock_ = other.counterBlock_;
+shared_ptr<T>::shared_ptr(const shared_ptr<T> &other) noexcept : ptr_{other.ptr_}, counterBlock_{other.counterBlock_}{
     counterBlock_->incrementSharedRefCounter();
 }
 template <typename T>
-shared_ptr<T>::shared_ptr(shared_ptr<T> &&other) noexcept {
-    ptr_ = other.ptr_;
-    counterBlock_ = other.counterBlock_;
+shared_ptr<T>::shared_ptr(shared_ptr<T> &&other) noexcept: ptr_{other.ptr_}, counterBlock_{other.counterBlock_} {
     other.ptr_ = nullptr;
     other.counterBlock_ = nullptr;
 }
