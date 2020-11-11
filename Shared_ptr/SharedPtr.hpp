@@ -35,7 +35,7 @@ template <typename T>
 void shared_ptr<T>::deleteResource() {
     if (counterBlock_) {
         counterBlock_->decrementSharedRefCounter();
-        if (counterBlock_->getSharedrefCounter() == 0) {
+        if (counterBlock_->getSharedrefCounter() == 0 && counterBlock_->getWeakRefCounter() == 0) {
             auto deleter = counterBlock_->getDeleter();
             deleter(ptr_);
             delete counterBlock_;
