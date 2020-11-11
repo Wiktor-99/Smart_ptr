@@ -8,7 +8,9 @@ constexpr int otherIntTestValue = 39;
 constexpr double otherDoubleTestValue = 1.111;
 constexpr int base = 2;
 constexpr int baseToThePower2 = base * base;
-
+constexpr std::size_t firstPtrCount = 1;
+constexpr std::size_t secondPtrCount = 2;
+constexpr std::size_t thirdPtrCount = 3;
 class SharedPtrTest : public testing::Test {
   public:
     SharedPtrTest() : intSharedPtr_{new int{intTestValue}}, doubleSharedPtr_{new double{doubleTestValue}} {}
@@ -39,7 +41,6 @@ TEST_F(SharedPtrTest, DereferenceOperatorShouldBeabelTochangeValueInsideSharedPt
     *doubleSharedPtr_ = otherDoubleTestValue;
     EXPECT_EQ(*intSharedPtr_, otherIntTestValue);
     EXPECT_EQ(*doubleSharedPtr_, otherDoubleTestValue);
-    
 }
 TEST_F(SharedPtrTest, operationCopySharedPtrShouldStorePointerToTheSameAddress) {
     auto intPtrCopy(intSharedPtr_);
@@ -47,4 +48,49 @@ TEST_F(SharedPtrTest, operationCopySharedPtrShouldStorePointerToTheSameAddress) 
 
     ASSERT_EQ(intSharedPtr_.get(), intPtrCopy.get());
     ASSERT_EQ(doubleSharedPtr_.get(), doublePtrCopy.get());
+}
+TEST_F(SharedPtrTest, forFirstPtrCountShouldBeEqualOneAndShouldIncrementCounterAndDecrementeCounter) {
+    ASSERT_EQ(intSharedPtr_.use_count(), firstPtrCount);
+    auto newPtr1 = intSharedPtr_;
+    ASSERT_EQ(intSharedPtr_.use_count(), secondPtrCount);
+    ASSERT_EQ(newPtr1.use_count(), secondPtrCount);
+    {
+        auto newPtr2 = intSharedPtr_;
+        ASSERT_EQ(intSharedPtr_.use_count(), thirdPtrCount);
+        ASSERT_EQ(newPtr1.use_count(), thirdPtrCount);
+        ASSERT_EQ(newPtr2.use_count(), thirdPtrCount);
+    }
+    ASSERT_EQ(intSharedPtr_.use_count(), secondPtrCount);
+    ASSERT_EQ(newPtr1.use_count(), secondPtrCount);
+}
+TEST_F(SharedPtrTest, sharedPtrShouldBeAbleToCastToBool) {
+    nostd::shared_ptr<int> empty;
+    ASSERT_FALSE(empty);
+    ASSERT_TRUE(intSharedPtr_);
+    ASSERT_TRUE(doubleSharedPtr_);
+}
+TEST_F(SharedPtrTest, resetMethodShouldResetSharedPtr) {
+    intSharedPtr_.reset();
+    doubleSharedPtr_.reset();
+    ASSERT_EQ(intSharedPtr_.get(),nullptr);
+    ASSERT_EQ(doubleSharedPtr_.get(),nullptr);
+    constexpr int newIntValue = 13;
+    constexpr double newDoubleValue = 13.05;
+  
+    intSharedPtr_.reset(new int{newIntValue});
+    doubleSharedPtr_.reset(new double(newDoubleValue));
+    ASSERT_EQ(*intSharedPtr_,newIntValue);
+    ASSERT_EQ(*doubleSharedPtr_,newDoubleValue);
+}
+TEST_F(SharedPtrTest, afterUsingResetMethodCounterShouldBeDecremented){
+    auto ptr2(intSharedPtr_);
+    ASSERT_EQ(intSharedPtr_.use_count(), secondPtrCount);
+    intSharedPtr_.reset();
+    ASSERT_EQ(intSharedPtr_.use_count(), firstPtrCount);    
+}
+TEST_F(SharedPtrTest, DecrementOfCounterShouldNotCauseDestructionOfObject){
+  {
+    auto ptr2(intSharedPtr_);
+  }
+  ASSERT_EQ(*intSharedPtr_, intTestValue);
 }
